@@ -1,0 +1,55 @@
+# Thư mục và modules
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.pnpm-debug.log
+.npm
+
+# Biến môi trường và cấu hình
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+config/config.json
+
+# IDE và Editor
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+*.swp
+*.swo
+
+# Build & Log
+logs/
+dist/
+build/
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+.eslintcache
+.parcel-cache/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Misc
+.DS_Store
+Thumbs.db
+.project
+.classpath
+.settings/
+*.log
+*.bak
+*.backup
+*.pid
+*.seed
+*.pid.lock 
