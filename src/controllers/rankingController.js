@@ -6,6 +6,8 @@ const rankingController = {
    */
   async getRankings(req, res) {
     try {
+      // Lấy token từ req
+      const token = req.token;
       const { timeRange = "month", limit = 10 } = req.query;
 
       // Kiểm tra timeRange hợp lệ
@@ -17,7 +19,11 @@ const rankingController = {
         });
       }
 
-      const rankings = await rankingService.getRankings(timeRange, limit);
+      const rankings = await rankingService.getRankings(
+        timeRange,
+        limit,
+        token
+      );
 
       return res.status(200).json(rankings);
     } catch (error) {

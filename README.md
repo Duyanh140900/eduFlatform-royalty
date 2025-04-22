@@ -87,6 +87,18 @@ Hệ thống sử dụng Swagger UI để cung cấp tài liệu API trực quan
 - `POST /api/users/cache` - Cập nhật thông tin người dùng vào cache
 - `POST /api/users/cache/bulk` - Cập nhật hàng loạt thông tin người dùng
 
+### Admin
+
+- `GET /api/admin/point-configs` - Lấy danh sách cấu hình điểm
+- `GET /api/admin/point-configs/:id` - Lấy chi tiết cấu hình điểm
+- `POST /api/admin/point-configs` - Tạo cấu hình điểm mới
+- `PUT /api/admin/point-configs/:id` - Cập nhật cấu hình điểm
+- `DELETE /api/admin/point-configs/:id` - Xóa cấu hình điểm
+- `GET /api/admin/badges` - Lấy danh sách huy hiệu
+- `POST /api/admin/badges` - Tạo huy hiệu mới
+- `PUT /api/admin/badges/:id` - Cập nhật huy hiệu
+- `GET /api/admin/statistics` - Lấy thống kê điểm
+
 ## Tích hợp với Hệ thống User
 
 Hệ thống sử dụng cache để lưu trữ thông tin người dùng từ hệ thống bên ngoài. Dữ liệu người dùng được lưu trong collection `UserInfo` và tự động cập nhật khi cần.

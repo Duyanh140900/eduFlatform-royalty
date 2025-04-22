@@ -4,6 +4,23 @@ const userController = {
   /**
    * Lấy thông tin người dùng
    */
+  async getMyInfo(req, res) {
+    try {
+      // Lấy token từ req
+      const token = req.token;
+      const result = await userService.getMyInfo(token);
+      return res.status(result.success ? 200 : 404).json(result);
+    } catch (error) {
+      console.error("Lỗi lấy thông tin người dùng:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi khi lấy thông tin người dùng",
+      });
+    }
+  },
+  /**
+   * Lấy thông tin người dùng
+   */
   async getUserInfo(req, res) {
     try {
       const { userId } = req.params;

@@ -1,11 +1,47 @@
 const axios = require("axios");
 const UserInfo = require("../models/userInfo");
+const jwt = require("jsonwebtoken");
 
 const userService = {
   /**
+   * Lấy thông tin người dùng
+   */
+  async getMyInfo(token) {
+    try {
+      // Giải mã token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Lấy thông tin người dùng từ database
+      // const userInfo = await UserInfo.findOne({ userId: decoded.userId });
+
+      // if (!userInfo) {
+      //   return {
+      //     success: false,
+      //     message: "Người dùng không tồn tại",
+      //   };
+      // }
+
+      return {
+        success: true,
+        data: decoded,
+      };
+    } catch (error) {
+      console.error(
+        "Lỗi khi giải mã token hoặc lấy thông tin người dùng:",
+        error
+      );
+
+      return {
+        success: false,
+        message: "Token không hợp lệ hoặc đã hết hạn",
+      };
+    }
+  },
+
+  /**
    * Lấy thông tin người dùng từ cache hoặc API bên ngoài
    */
-  async getUserInfo(userId) {
+  async getUserInfo(userId, token) {
     try {
       // Tìm trong cache trước
       let userInfo = await UserInfo.findOne({ userId });
@@ -20,15 +56,19 @@ const userService = {
 
       // Nếu không có trong cache hoặc cache đã hết hạn, gọi API
       const apiUrl =
-        process.env.USER_API_URL || "http://api-user-service/users";
-      const response = await axios.get(`${apiUrl}/${userId}`);
+        process.env.USER_API_URL || "https://api.pm-ptdv.com/api/user/info";
+      const response = await axios.get(`${apiUrl}/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Sử dụng token từ middleware
+        },
+      });
 
       if (response.data && response.data.success) {
         // Cập nhật hoặc tạo mới cache
         userInfo = await UserInfo.findOneAndUpdate(
           { userId },
           {
-            fullName: response.data.data.fullName || "",
+            fullName: response.data.data.fullname || "",
             email: response.data.data.email,
             avatar: response.data.data.avatar,
             updatedAt: new Date(),

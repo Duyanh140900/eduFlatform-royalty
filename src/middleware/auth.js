@@ -58,4 +58,12 @@ const adminAuth = (req, res, next) => {
   }
 };
 
-module.exports = { auth, adminAuth };
+function attachToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    req.token = authHeader.split(" ")[1]; // Gắn token vào req
+  }
+  next();
+}
+
+module.exports = { auth, adminAuth, attachToken };

@@ -34,6 +34,32 @@ const router = express.Router();
 
 /**
  * @swagger
+ * /users/myInfo:
+ *   get:
+ *     summary: Lấy thông tin người dùng
+ *     description: Lấy thông tin chi tiết của người
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Thông tin người dùng
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/UserInfo'
+ *       404:
+ *         description: Không tìm thấy người dùng
+ *       500:
+ *         description: Lỗi server
+ */
+router.get("/myInfo", userController.getMyInfo);
+
+/**
+ * @swagger
  * /users/info/{userId}:
  *   get:
  *     summary: Lấy thông tin người dùng

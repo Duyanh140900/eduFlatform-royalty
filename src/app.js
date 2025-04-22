@@ -9,6 +9,7 @@ const pointRoutes = require("./routes/pointRoutes");
 const rankingRoutes = require("./routes/rankingRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const userRoutes = require("./routes/userRoutes");
+const { attachToken } = require("./middleware/auth");
 
 // Tải biến môi trường
 dotenv.config();
@@ -22,6 +23,7 @@ connectDB();
 // Middleware
 app.use(express.json());
 app.use(cors());
+app.use(attachToken);
 
 // Swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

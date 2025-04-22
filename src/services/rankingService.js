@@ -25,7 +25,7 @@ const rankingService = {
   /**
    * Lấy bảng xếp hạng theo thời gian
    */
-  async getRankings(timeRange = "month", limit = 10) {
+  async getRankings(timeRange = "month", limit = 10, token = null) {
     try {
       let startDate = new Date();
       const endDate = new Date();
@@ -80,7 +80,7 @@ const rankingService = {
         const userPoint = await UserPoint.findOne({ userId: point._id });
 
         // Lấy thông tin user từ cache
-        const userInfo = await userService.getUserInfo(point._id);
+        const userInfo = await userService.getUserInfo(point._id, token);
 
         rankings.push({
           rank: index + 1,
