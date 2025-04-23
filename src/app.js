@@ -33,6 +33,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/points", pointRoutes);
 app.use("/api/rankings", rankingRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/users", userRoutes);
 
 // Route mặc định
 app.get("/", (req, res) => {

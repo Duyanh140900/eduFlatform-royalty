@@ -85,7 +85,8 @@ const rankingService = {
             ? userInfo.data.fullName
             : `User ${point._id.substring(0, 5)}...`,
           totalPoints: point.totalPoints,
-          badgeLevel: badgeLevel || null,
+          badgeLevel: badgeLevel?.name || null,
+          iconBadge: badgeLevel?.icon || null,
           avatar: userInfo.success ? userInfo.data.avatar : null,
         });
       }
@@ -142,15 +143,23 @@ const rankingService = {
       const periodPoints = await PointTransaction.aggregate([
         {
           $match: {
-            userId,
+            userId, // Chỉ lọc theo userId của bạn
             createdAt: { $gte: startDate, $lte: endDate },
-            type: "EARN",
+            type: { $in: ["EARN", "REDEEM"] },
           },
         },
         {
           $group: {
-            _id: null,
-            totalPoints: { $sum: "$points" },
+            _id: "$userId",
+            totalPoints: {
+              $sum: {
+                $cond: [
+                  { $eq: ["$type", "EARN"] }, // Cộng điểm nếu là EARN
+                  "$points",
+                  { $multiply: ["$points", -1] }, // Trừ điểm nếu là REDEEM
+                ],
+              },
+            },
           },
         },
       ]);
@@ -216,31 +225,11 @@ const rankingService = {
         return null;
       }
 
-      // Tìm huy hiệu phù hợp theo điểm và thứ hạng
-      let userBadge = null;
-      let nextBadge = null;
+      const userBadge = badges.find((badge) => {
+        return totalPoints >= badge.minPoints && rank <= badge.topPoints;
+      });
 
-      for (let i = 0; i < badges.length; i++) {
-        const badge = badges[i];
-
-        // Kiểm tra điều kiện huy hiệu (điểm tối thiểu và xếp hạng)
-        if (
-          totalPoints >= badge.minPoints &&
-          (!badge.topPoints || rank <= badge.topPoints)
-        ) {
-          userBadge = badge;
-          nextBadge = badges[i - 1] || null;
-          break;
-        }
-      }
-
-      // Nếu không tìm thấy huy hiệu nào phù hợp, lấy huy hiệu có điểm thấp nhất
-      if (!userBadge) {
-        userBadge = badges[badges.length - 1];
-        nextBadge = badges[badges.length - 2] || null;
-      }
-
-      return userBadge.name;
+      return userBadge;
     } catch (error) {
       console.error("Lỗi kiểm tra huy hiệu:", error);
       return null;
