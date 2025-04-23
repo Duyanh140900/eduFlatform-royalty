@@ -17,6 +17,9 @@
  *         minPoints:
  *           type: integer
  *           description: Số điểm tối thiểu để đạt huy hiệu
+ *         topPoints:
+ *           type: integer
+ *           description: Top điểm để đạt huy hiệu
  *         icon:
  *           type: string
  *           description: Đường dẫn icon của huy hiệu
@@ -48,7 +51,11 @@ const badgeSchema = new mongoose.Schema({
   },
   minPoints: {
     type: Number,
-    required: true,
+    required: false,
+  },
+  topPoints: {
+    type: Number,
+    required: false,
   },
   icon: {
     type: String,

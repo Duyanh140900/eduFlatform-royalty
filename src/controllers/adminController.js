@@ -2,6 +2,7 @@ const PointConfig = require("../models/pointConfig");
 const Badge = require("../models/badge");
 const PointTransaction = require("../models/pointTransaction");
 const UserPoint = require("../models/userPoint");
+const Setting = require("../models/setting");
 
 const adminController = {
   /**
@@ -58,14 +59,8 @@ const adminController = {
    */
   async createPointConfig(req, res) {
     try {
-      const {
-        scenarioType,
-        name,
-        description,
-        pointValue,
-        isActive,
-        redemptionRate,
-      } = req.body;
+      const { scenarioType, name, description, pointValue, isActive } =
+        req.body;
 
       // Kiểm tra cấu hình đã tồn tại
       const existingConfig = await PointConfig.findOne({ scenarioType });
@@ -82,7 +77,6 @@ const adminController = {
         description,
         pointValue,
         isActive: isActive !== undefined ? isActive : true,
-        redemptionRate: redemptionRate || 1000, // Mặc định 1 điểm = 1000 VND
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -109,8 +103,7 @@ const adminController = {
   async updatePointConfig(req, res) {
     try {
       const { id } = req.params;
-      const { name, description, pointValue, isActive, redemptionRate } =
-        req.body;
+      const { name, description, pointValue, isActive } = req.body;
 
       const config = await PointConfig.findById(id);
 
@@ -126,7 +119,6 @@ const adminController = {
       if (description !== undefined) config.description = description;
       if (pointValue !== undefined) config.pointValue = pointValue;
       if (isActive !== undefined) config.isActive = isActive;
-      if (redemptionRate !== undefined) config.redemptionRate = redemptionRate;
 
       config.updatedAt = new Date();
 
@@ -202,7 +194,7 @@ const adminController = {
    */
   async createBadge(req, res) {
     try {
-      const { name, minPoints, icon, benefits, isActive } = req.body;
+      const { name, minPoints, topPoints, icon, benefits, isActive } = req.body;
 
       // Kiểm tra huy hiệu đã tồn tại
       const existingBadge = await Badge.findOne({ name });
@@ -216,6 +208,7 @@ const adminController = {
       const newBadge = new Badge({
         name,
         minPoints,
+        topPoints,
         icon,
         benefits: benefits || [],
         isActive: isActive !== undefined ? isActive : true,
@@ -245,7 +238,7 @@ const adminController = {
   async updateBadge(req, res) {
     try {
       const { id } = req.params;
-      const { name, minPoints, icon, benefits, isActive } = req.body;
+      const { name, minPoints, topPoints, icon, benefits, isActive } = req.body;
 
       const badge = await Badge.findById(id);
 
@@ -259,6 +252,7 @@ const adminController = {
       // Cập nhật thông tin
       if (name) badge.name = name;
       if (minPoints !== undefined) badge.minPoints = minPoints;
+      if (topPoints !== undefined) badge.topPoints = topPoints;
       if (icon) badge.icon = icon;
       if (benefits) badge.benefits = benefits;
       if (isActive !== undefined) badge.isActive = isActive;
@@ -385,6 +379,231 @@ const adminController = {
       return res.status(500).json({
         success: false,
         message: "Lỗi khi thống kê tích điểm",
+      });
+    }
+  },
+
+  /**
+   * Lấy danh sách tất cả cài đặt
+   */
+  async getSettings(req, res) {
+    try {
+      const settings = await Setting.find().sort({ category: 1, key: 1 });
+
+      return res.status(200).json({
+        success: true,
+        data: settings,
+      });
+    } catch (error) {
+      console.error("Lỗi lấy danh sách cài đặt:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi khi lấy danh sách cài đặt",
+      });
+    }
+  },
+
+  /**
+   * Lấy thông tin chi tiết cài đặt
+   */
+  async getSetting(req, res) {
+    try {
+      const { key } = req.params;
+
+      const setting = await Setting.findOne({ key });
+
+      if (!setting) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy cài đặt",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: setting,
+      });
+    } catch (error) {
+      console.error("Lỗi lấy thông tin cài đặt:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi khi lấy thông tin cài đặt",
+      });
+    }
+  },
+
+  /**
+   * Tạo cài đặt mới
+   */
+  async createSetting(req, res) {
+    try {
+      const { key, name, value, dataType, description, category, isPublic } =
+        req.body;
+
+      // Kiểm tra cài đặt đã tồn tại
+      const existingSetting = await Setting.findOne({ key });
+      if (existingSetting) {
+        return res.status(400).json({
+          success: false,
+          message: "Cài đặt với key này đã tồn tại",
+        });
+      }
+
+      // Chuyển đổi giá trị theo kiểu dữ liệu
+      let convertedValue = value;
+      if (dataType === "number") {
+        convertedValue = Number(value);
+      } else if (dataType === "boolean") {
+        convertedValue = value === "true" || value === true;
+      } else if (dataType === "json" && typeof value === "string") {
+        try {
+          convertedValue = JSON.parse(value);
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Giá trị JSON không hợp lệ",
+          });
+        }
+      }
+
+      const newSetting = new Setting({
+        key,
+        name,
+        value: convertedValue,
+        dataType: dataType || "string",
+        description,
+        category: category || "general",
+        isPublic: isPublic !== undefined ? isPublic : false,
+      });
+
+      await newSetting.save();
+
+      return res.status(201).json({
+        success: true,
+        data: newSetting,
+        message: "Tạo cài đặt thành công",
+      });
+    } catch (error) {
+      console.error("Lỗi tạo cài đặt:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi khi tạo cài đặt",
+      });
+    }
+  },
+
+  /**
+   * Cập nhật cài đặt
+   */
+  async updateSetting(req, res) {
+    try {
+      const { key } = req.params;
+      const { name, value, dataType, description, category, isPublic } =
+        req.body;
+
+      const setting = await Setting.findOne({ key });
+
+      if (!setting) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy cài đặt",
+        });
+      }
+
+      // Cập nhật thông tin
+      if (name) setting.name = name;
+
+      // Cập nhật giá trị và chuyển đổi theo kiểu dữ liệu
+      if (value !== undefined) {
+        const effectiveDataType = dataType || setting.dataType;
+
+        let convertedValue = value;
+        if (effectiveDataType === "number") {
+          convertedValue = Number(value);
+        } else if (effectiveDataType === "boolean") {
+          convertedValue = value === "true" || value === true;
+        } else if (effectiveDataType === "json" && typeof value === "string") {
+          try {
+            convertedValue = JSON.parse(value);
+          } catch (error) {
+            return res.status(400).json({
+              success: false,
+              message: "Giá trị JSON không hợp lệ",
+            });
+          }
+        }
+
+        setting.value = convertedValue;
+      }
+
+      if (dataType) setting.dataType = dataType;
+      if (description !== undefined) setting.description = description;
+      if (category) setting.category = category;
+      if (isPublic !== undefined) setting.isPublic = isPublic;
+
+      await setting.save();
+
+      return res.status(200).json({
+        success: true,
+        data: setting,
+        message: "Cập nhật cài đặt thành công",
+      });
+    } catch (error) {
+      console.error("Lỗi cập nhật cài đặt:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi khi cập nhật cài đặt",
+      });
+    }
+  },
+
+  /**
+   * Xóa cài đặt
+   */
+  async deleteSetting(req, res) {
+    try {
+      const { key } = req.params;
+
+      const setting = await Setting.findOne({ key });
+
+      if (!setting) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy cài đặt",
+        });
+      }
+
+      await setting.deleteOne();
+
+      return res.status(200).json({
+        success: true,
+        message: "Xóa cài đặt thành công",
+      });
+    } catch (error) {
+      console.error("Lỗi xóa cài đặt:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi khi xóa cài đặt",
+      });
+    }
+  },
+
+  /**
+   * Khởi tạo các cài đặt mặc định nếu chưa tồn tại
+   */
+  async initializeSettings(req, res) {
+    try {
+      await Setting.initializeDefaults();
+
+      return res.status(200).json({
+        success: true,
+        message: "Khởi tạo cài đặt mặc định thành công",
+      });
+    } catch (error) {
+      console.error("Lỗi khởi tạo cài đặt mặc định:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi khi khởi tạo cài đặt mặc định",
       });
     }
   },

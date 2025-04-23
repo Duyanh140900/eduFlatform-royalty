@@ -93,13 +93,6 @@ const pointService = {
         isActive: true,
       });
 
-      if (!config || !config.redemptionRate) {
-        throw new Error("Cấu hình quy đổi điểm không tồn tại");
-      }
-
-      // Tính số tiền được giảm
-      const amountConverted = points * config.redemptionRate;
-
       // Cập nhật điểm
       userPoint.totalPoints -= points;
       userPoint.updatedAt = new Date();
@@ -113,7 +106,6 @@ const pointService = {
         scenarioType: "order_discount",
         description: "Sử dụng điểm để giảm giá đơn hàng",
         orderId,
-        amountConverted,
         createdAt: new Date(),
       });
 
@@ -122,7 +114,6 @@ const pointService = {
       return {
         success: true,
         pointsRedeemed: points,
-        amountConverted,
         remainingPoints: userPoint.totalPoints,
       };
     } catch (error) {

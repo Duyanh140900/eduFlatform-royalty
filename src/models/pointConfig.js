@@ -27,9 +27,6 @@
  *         isActive:
  *           type: boolean
  *           description: Trạng thái kích hoạt cấu hình
- *         redemptionRate:
- *           type: number
- *           description: Tỷ lệ quy đổi điểm sang giá trị tiền (VNĐ)
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -62,10 +59,6 @@ const pointConfigSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true,
-  },
-  redemptionRate: {
-    type: Number,
-    default: 1000, // 1 điểm = 1000 VNĐ
   },
   createdAt: {
     type: Date,

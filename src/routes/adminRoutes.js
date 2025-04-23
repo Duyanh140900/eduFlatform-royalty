@@ -41,6 +41,42 @@ const router = express.Router();
  *               description: Thống kê giao dịch theo ngày
  *               items:
  *                 type: object
+ *     Setting:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: ID của cài đặt
+ *         key:
+ *           type: string
+ *           description: Khóa cài đặt
+ *         name:
+ *           type: string
+ *           description: Tên cài đặt
+ *         value:
+ *           type: string
+ *           description: Giá trị cài đặt
+ *         dataType:
+ *           type: string
+ *           enum: [string, number, boolean, json]
+ *           description: Kiểu dữ liệu của giá trị
+ *         description:
+ *           type: string
+ *           description: Mô tả cài đặt
+ *         category:
+ *           type: string
+ *           description: Danh mục cài đặt
+ *         isPublic:
+ *           type: boolean
+ *           description: Cài đặt có công khai hay không
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Thời gian tạo
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Thời gian cập nhật gần nhất
  */
 
 // Tất cả các routes đều yêu cầu quyền admin
@@ -148,9 +184,6 @@ router.get("/point-configs/:id", adminController.getPointConfig);
  *               isActive:
  *                 type: boolean
  *                 description: Trạng thái kích hoạt
- *               redemptionRate:
- *                 type: number
- *                 description: Tỷ lệ quy đổi điểm
  *     responses:
  *       201:
  *         description: Tạo cấu hình điểm thành công
@@ -213,9 +246,6 @@ router.post(
  *               isActive:
  *                 type: boolean
  *                 description: Trạng thái kích hoạt
- *               redemptionRate:
- *                 type: number
- *                 description: Tỷ lệ quy đổi điểm
  *     responses:
  *       200:
  *         description: Cập nhật thành công
@@ -331,6 +361,9 @@ router.get("/badges", adminController.getBadges);
  *               minPoints:
  *                 type: integer
  *                 description: Số điểm tối thiểu để đạt huy hiệu
+ *               topPoints:
+ *                 type: integer
+ *                 description: Top điểm để đạt huy hiệu
  *               icon:
  *                 type: string
  *                 description: Đường dẫn icon của huy hiệu
@@ -394,6 +427,9 @@ router.post("/badges", adminController.createBadge);
  *               minPoints:
  *                 type: integer
  *                 description: Số điểm tối thiểu để đạt huy hiệu
+ *               topPoints:
+ *                 type: integer
+ *                 description: Top điểm để đạt huy hiệu
  *               icon:
  *                 type: string
  *                 description: Đường dẫn icon của huy hiệu
@@ -450,5 +486,239 @@ router.put("/badges/:id", adminController.updateBadge);
  *         description: Lỗi server
  */
 router.get("/statistics", adminController.getPointStatistics);
+
+/**
+ * @swagger
+ * /admin/settings:
+ *   get:
+ *     summary: Lấy danh sách cài đặt
+ *     description: Lấy tất cả cài đặt trong hệ thống
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Danh sách cài đặt
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Setting'
+ *       401:
+ *         description: Không có quyền truy cập
+ *       500:
+ *         description: Lỗi server
+ */
+router.get("/settings", adminController.getSettings);
+
+/**
+ * @swagger
+ * /admin/settings/{key}:
+ *   get:
+ *     summary: Lấy chi tiết cài đặt
+ *     description: Lấy thông tin chi tiết của một cài đặt theo key
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Key của cài đặt
+ *     responses:
+ *       200:
+ *         description: Chi tiết cài đặt
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Setting'
+ *       401:
+ *         description: Không có quyền truy cập
+ *       404:
+ *         description: Không tìm thấy cài đặt
+ *       500:
+ *         description: Lỗi server
+ */
+router.get("/settings/:key", adminController.getSetting);
+
+/**
+ * @swagger
+ * /admin/settings:
+ *   post:
+ *     summary: Tạo cài đặt mới
+ *     description: Tạo một cài đặt mới trong hệ thống
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - key
+ *               - name
+ *               - value
+ *             properties:
+ *               key:
+ *                 type: string
+ *                 description: Khóa cài đặt
+ *               name:
+ *                 type: string
+ *                 description: Tên cài đặt
+ *               value:
+ *                 type: string
+ *                 description: Giá trị cài đặt
+ *               dataType:
+ *                 type: string
+ *                 enum: [string, number, boolean, json]
+ *                 description: Kiểu dữ liệu của giá trị
+ *               description:
+ *                 type: string
+ *                 description: Mô tả cài đặt
+ *               category:
+ *                 type: string
+ *                 description: Danh mục cài đặt
+ *               isPublic:
+ *                 type: boolean
+ *                 description: Cài đặt có công khai hay không
+ *     responses:
+ *       201:
+ *         description: Tạo cài đặt thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Setting'
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Dữ liệu không hợp lệ hoặc đã tồn tại
+ *       401:
+ *         description: Không có quyền truy cập
+ *       500:
+ *         description: Lỗi server
+ */
+router.post("/settings", adminController.createSetting);
+
+/**
+ * @swagger
+ * /admin/settings/{key}:
+ *   put:
+ *     summary: Cập nhật cài đặt
+ *     description: Cập nhật thông tin của một cài đặt
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Key của cài đặt
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Tên cài đặt
+ *               value:
+ *                 type: string
+ *                 description: Giá trị cài đặt
+ *               dataType:
+ *                 type: string
+ *                 enum: [string, number, boolean, json]
+ *                 description: Kiểu dữ liệu của giá trị
+ *               description:
+ *                 type: string
+ *                 description: Mô tả cài đặt
+ *               category:
+ *                 type: string
+ *                 description: Danh mục cài đặt
+ *               isPublic:
+ *                 type: boolean
+ *                 description: Cài đặt có công khai hay không
+ *     responses:
+ *       200:
+ *         description: Cập nhật thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Setting'
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Không có quyền truy cập
+ *       404:
+ *         description: Không tìm thấy cài đặt
+ *       500:
+ *         description: Lỗi server
+ */
+router.put("/settings/:key", adminController.updateSetting);
+
+/**
+ * @swagger
+ * /admin/settings/{key}:
+ *   delete:
+ *     summary: Xóa cài đặt
+ *     description: Xóa một cài đặt khỏi hệ thống
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Key của cài đặt
+ *     responses:
+ *       200:
+ *         description: Xóa thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Không có quyền truy cập
+ *       404:
+ *         description: Không tìm thấy cài đặt
+ *       500:
+ *         description: Lỗi server
+ */
+router.delete("/settings/:key", adminController.deleteSetting);
 
 module.exports = router;

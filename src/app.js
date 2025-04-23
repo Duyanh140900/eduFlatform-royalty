@@ -9,6 +9,7 @@ const pointRoutes = require("./routes/pointRoutes");
 const rankingRoutes = require("./routes/rankingRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const userRoutes = require("./routes/userRoutes");
+const settingRoutes = require("./routes/settingRoutes");
 const { attachToken } = require("./middleware/auth");
 
 // Tải biến môi trường
@@ -32,7 +33,6 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/points", pointRoutes);
 app.use("/api/rankings", rankingRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/users", userRoutes);
 
 // Route mặc định
 app.get("/", (req, res) => {
@@ -68,7 +68,7 @@ app.use((req, res) => {
 
 // Khởi động server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server đang chạy trên cổng ${PORT}`);
   console.log(`Swagger UI: http://localhost:${PORT}/api-docs`);
 });
