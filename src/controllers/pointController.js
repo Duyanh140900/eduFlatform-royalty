@@ -14,9 +14,6 @@ const pointController = {
         orderId,
       });
 
-      // Cập nhật xếp hạng sau khi tích điểm
-      await rankingService.updateRankings();
-
       return res.status(200).json(result);
     } catch (error) {
       console.error("Lỗi tích điểm:", error);
@@ -35,9 +32,6 @@ const pointController = {
       const { userId, points, orderId } = req.body;
 
       const result = await pointService.redeemPoints(userId, points, orderId);
-
-      // Cập nhật xếp hạng sau khi tiêu điểm
-      await rankingService.updateRankings();
 
       return res.status(200).json(result);
     } catch (error) {

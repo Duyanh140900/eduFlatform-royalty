@@ -63,23 +63,5 @@ const rankingController = {
       });
     }
   },
-
-  /**
-   * Cập nhật xếp hạng thủ công (chỉ dành cho admin)
-   */
-  async updateRankings(req, res) {
-    try {
-      const result = await rankingService.updateRankings();
-
-      return res.status(200).json(result);
-    } catch (error) {
-      console.error("Lỗi cập nhật xếp hạng:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Lỗi khi cập nhật xếp hạng",
-      });
-    }
-  },
 };
-
 module.exports = rankingController;

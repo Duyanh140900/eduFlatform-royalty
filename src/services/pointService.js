@@ -64,7 +64,6 @@ const pointService = {
         success: true,
         points: config.pointValue,
         totalPoints: userPoint.totalPoints,
-        badgeLevel: userPoint.badgeLevel,
       };
     } catch (error) {
       console.error("Lỗi tích điểm:", error);

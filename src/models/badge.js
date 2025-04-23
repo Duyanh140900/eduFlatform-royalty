@@ -51,11 +51,11 @@ const badgeSchema = new mongoose.Schema({
   },
   minPoints: {
     type: Number,
-    required: false,
+    required: true,
   },
   topPoints: {
     type: Number,
-    required: false,
+    required: true,
   },
   icon: {
     type: String,

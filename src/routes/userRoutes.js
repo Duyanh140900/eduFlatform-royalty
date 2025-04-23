@@ -91,43 +91,43 @@ const router = express.Router();
  */
 router.get("/info/:userId", userController.getUserInfo);
 
-/**
- * @swagger
- * /users/cache:
- *   post:
- *     summary: Cập nhật thông tin người dùng vào cache
- *     description: Cập nhật hoặc tạo mới thông tin người dùng trong cache
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userId
- *             properties:
- *               userId:
- *                 type: string
- *               fullName:
- *                 type: string
- *               email:
- *                 type: string
- *               avatar:
- *                 type: string
- *     responses:
- *       200:
- *         description: Cập nhật thành công
- *       400:
- *         description: Dữ liệu không hợp lệ
- *       401:
- *         description: Không có quyền truy cập
- *       500:
- *         description: Lỗi server
- */
-// router.post("/cache", auth, userController.updateUserCache);
+// /**
+//  * @swagger
+//  * /users/cache:
+//  *   post:
+//  *     summary: Cập nhật thông tin người dùng vào cache
+//  *     description: Cập nhật hoặc tạo mới thông tin người dùng trong cache
+//  *     tags: [Users]
+//  *     security:
+//  *       - bearerAuth: []
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             required:
+//  *               - userId
+//  *             properties:
+//  *               userId:
+//  *                 type: string
+//  *               fullName:
+//  *                 type: string
+//  *               email:
+//  *                 type: string
+//  *               avatar:
+//  *                 type: string
+//  *     responses:
+//  *       200:
+//  *         description: Cập nhật thành công
+//  *       400:
+//  *         description: Dữ liệu không hợp lệ
+//  *       401:
+//  *         description: Không có quyền truy cập
+//  *       500:
+//  *         description: Lỗi server
+//  */
+// // router.post("/cache", auth, userController.updateUserCache);
 
 // /**
 //  * @swagger

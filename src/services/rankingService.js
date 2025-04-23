@@ -1,55 +1,41 @@
 const UserPoint = require("../models/userPoint");
 const PointTransaction = require("../models/pointTransaction");
 const userService = require("./userService");
+const Badge = require("../models/badge");
+const {
+  getTodayRange,
+  getThisMonthRange,
+  getThisWeekRange,
+  getThisYearRange,
+} = require("../utils/helpers");
 
 const rankingService = {
-  /**
-   * Cập nhật xếp hạng cho tất cả người dùng
-   */
-  async updateRankings() {
-    try {
-      const users = await UserPoint.find().sort({ totalPoints: -1 });
-
-      for (let i = 0; i < users.length; i++) {
-        users[i].rank = i + 1;
-        await users[i].save();
-      }
-
-      return { success: true, message: "Đã cập nhật xếp hạng" };
-    } catch (error) {
-      console.error("Lỗi cập nhật xếp hạng:", error);
-      throw error;
-    }
-  },
-
   /**
    * Lấy bảng xếp hạng theo thời gian
    */
   async getRankings(timeRange = "month", limit = 10, token = null) {
     try {
+      // Lấy xếp hạng trong khoảng thời gian
       let startDate = new Date();
-      const endDate = new Date();
+      let endDate = new Date();
 
       // Xác định thời gian bắt đầu dựa vào timeRange
       if (timeRange === "day") {
-        // Ngày hôm qua (T-1)
-        startDate.setDate(startDate.getDate() - 1);
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setDate(endDate.getDate() - 1);
-        endDate.setHours(23, 59, 59, 999);
+        const { start, end } = getTodayRange();
+        startDate = start;
+        endDate = end;
       } else if (timeRange === "week") {
-        // Tuần hiện tại cộng dồn đến ngày T-1
-        const day = startDate.getDay();
-        startDate.setDate(startDate.getDate() - day + (day === 0 ? -6 : 1)); // Lấy thứ 2 đầu tuần
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setDate(endDate.getDate() - 1);
-        endDate.setHours(23, 59, 59, 999);
+        const { start, end } = getThisWeekRange();
+        startDate = start;
+        endDate = end;
       } else if (timeRange === "month") {
-        // Tháng hiện tại cộng dồn đến ngày T-1
-        startDate.setDate(1);
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setDate(endDate.getDate() - 1);
-        endDate.setHours(23, 59, 59, 999);
+        const { start, end } = getThisMonthRange();
+        startDate = start;
+        endDate = end;
+      } else if (timeRange === "year") {
+        const { start, end } = getThisYearRange();
+        startDate = start;
+        endDate = end;
       }
 
       // Tính tổng điểm của mỗi người dùng trong khoảng thời gian
@@ -57,13 +43,21 @@ const rankingService = {
         {
           $match: {
             createdAt: { $gte: startDate, $lte: endDate },
-            type: "EARN",
+            type: { $in: ["EARN", "REDEEM"] },
           },
         },
         {
           $group: {
             _id: "$userId",
-            totalPoints: { $sum: "$points" },
+            totalPoints: {
+              $sum: {
+                $cond: [
+                  { $eq: ["$type", "EARN"] },
+                  "$points",
+                  { $multiply: ["$points", 1] }, // Trừ điểm nếu là REDEEM
+                ],
+              },
+            },
           },
         },
         {
@@ -73,12 +67,14 @@ const rankingService = {
           $limit: parseInt(limit),
         },
       ]);
-
+      console.log("userPoints", userPoints, startDate, endDate);
       // Lấy thông tin chi tiết của người dùng
       const rankings = [];
       for (const [index, point] of userPoints.entries()) {
-        const userPoint = await UserPoint.findOne({ userId: point._id });
-
+        const badgeLevel = await this.checkUserBadge(
+          point.totalPoints,
+          index + 1
+        );
         // Lấy thông tin user từ cache
         const userInfo = await userService.getUserInfo(point._id, token);
 
@@ -89,7 +85,7 @@ const rankingService = {
             ? userInfo.data.fullName
             : `User ${point._id.substring(0, 5)}...`,
           totalPoints: point.totalPoints,
-          badgeLevel: userPoint ? userPoint.badgeLevel : "Mới",
+          badgeLevel: badgeLevel || null,
           avatar: userInfo.success ? userInfo.data.avatar : null,
         });
       }
@@ -119,31 +115,27 @@ const rankingService = {
         };
       }
 
-      // Lấy xếp hạng hiện tại trên toàn cầu
-      const globalRank =
-        userPoint.rank || (await this.calculateGlobalRank(userId));
-
       // Lấy xếp hạng trong khoảng thời gian
       let startDate = new Date();
-      const endDate = new Date();
+      let endDate = new Date();
 
       // Xác định thời gian bắt đầu dựa vào timeRange
       if (timeRange === "day") {
-        startDate.setDate(startDate.getDate() - 1);
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setDate(endDate.getDate() - 1);
-        endDate.setHours(23, 59, 59, 999);
+        const { start, end } = getTodayRange();
+        startDate = start;
+        endDate = end;
       } else if (timeRange === "week") {
-        const day = startDate.getDay();
-        startDate.setDate(startDate.getDate() - day + (day === 0 ? -6 : 1));
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setDate(endDate.getDate() - 1);
-        endDate.setHours(23, 59, 59, 999);
+        const { start, end } = getThisWeekRange();
+        startDate = start;
+        endDate = end;
       } else if (timeRange === "month") {
-        startDate.setDate(1);
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setDate(endDate.getDate() - 1);
-        endDate.setHours(23, 59, 59, 999);
+        const { start, end } = getThisMonthRange();
+        startDate = start;
+        endDate = end;
+      } else if (timeRange === "year") {
+        const { start, end } = getThisYearRange();
+        startDate = start;
+        endDate = end;
       }
 
       // Tính điểm trong khoảng thời gian
@@ -197,7 +189,6 @@ const rankingService = {
         userId,
         totalPoints: userPoint.totalPoints,
         badgeLevel: userPoint.badgeLevel,
-        globalRank,
         timeRange,
         periodPoints: userPeriodPoints,
         periodRank,
@@ -209,23 +200,50 @@ const rankingService = {
   },
 
   /**
-   * Tính toán xếp hạng toàn cầu của một người dùng
+   * Kiểm tra huy hiệu người dùng dựa vào điểm tối thiểu và thứ hạng
+   * @param {number} totalPoints - Tổng điểm của người dùng
+   * @param {number} rank - Thứ hạng của người dùng
+   * @returns {Object} - Thông tin về huy hiệu người dùng
    */
-  async calculateGlobalRank(userId) {
+  async checkUserBadge(totalPoints, rank) {
     try {
-      const userPoint = await UserPoint.findOne({ userId });
-      if (!userPoint) {
+      // Lấy danh sách huy hiệu từ cơ sở dữ liệu
+      const badges = await Badge.find({ isActive: true }).sort({
+        minPoints: -1,
+      });
+
+      if (!badges || badges.length === 0) {
         return null;
       }
 
-      const usersAbove = await UserPoint.countDocuments({
-        totalPoints: { $gt: userPoint.totalPoints },
-      });
+      // Tìm huy hiệu phù hợp theo điểm và thứ hạng
+      let userBadge = null;
+      let nextBadge = null;
 
-      return usersAbove + 1;
+      for (let i = 0; i < badges.length; i++) {
+        const badge = badges[i];
+
+        // Kiểm tra điều kiện huy hiệu (điểm tối thiểu và xếp hạng)
+        if (
+          totalPoints >= badge.minPoints &&
+          (!badge.topPoints || rank <= badge.topPoints)
+        ) {
+          userBadge = badge;
+          nextBadge = badges[i - 1] || null;
+          break;
+        }
+      }
+
+      // Nếu không tìm thấy huy hiệu nào phù hợp, lấy huy hiệu có điểm thấp nhất
+      if (!userBadge) {
+        userBadge = badges[badges.length - 1];
+        nextBadge = badges[badges.length - 2] || null;
+      }
+
+      return userBadge.name;
     } catch (error) {
-      console.error("Lỗi tính toán xếp hạng toàn cầu:", error);
-      throw error;
+      console.error("Lỗi kiểm tra huy hiệu:", error);
+      return null;
     }
   },
 };

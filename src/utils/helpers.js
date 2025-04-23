@@ -63,9 +63,70 @@ const formatDate = (date) => {
     .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
 };
 
+function getTodayRange() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const end = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23,
+    59,
+    59,
+    999
+  );
+  return { start, end };
+}
+
+function getThisWeekRange() {
+  const now = new Date();
+
+  // Tính thứ trong tuần (0 = Chủ Nhật, 1 = Thứ Hai, ..., 6 = Thứ Bảy)
+  const currentDay = now.getDay();
+  const distanceToMonday = (currentDay + 6) % 7; // chuyển Chủ Nhật thành 6, Thứ Hai thành 0
+
+  // Tính ngày đầu tuần (Thứ Hai)
+  const start = new Date(now);
+  start.setDate(now.getDate() - distanceToMonday);
+  start.setHours(0, 0, 0, 0);
+
+  // Ngày cuối tuần (Chủ Nhật)
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+
+  return { start, end };
+}
+
+function getThisMonthRange() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+    999
+  );
+  return { start, end };
+}
+
+function getThisYearRange() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+  return { start, end };
+}
+
 module.exports = {
   isNullOrUndefined,
   getStartDateByTimeRange,
   getEndDateByTimeRange,
   formatDate,
+  getTodayRange,
+  getThisWeekRange,
+  getThisMonthRange,
+  getThisYearRange,
 };

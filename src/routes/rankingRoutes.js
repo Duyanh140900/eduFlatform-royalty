@@ -116,32 +116,4 @@ router.get("/", rankingController.getRankings);
  */
 router.get("/:userId", rankingController.getUserRanking);
 
-/**
- * @swagger
- * /rankings/update:
- *   post:
- *     summary: Cập nhật bảng xếp hạng
- *     description: Cập nhật xếp hạng cho tất cả người dùng
- *     tags: [Rankings]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Cập nhật thành công
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *       401:
- *         description: Không có quyền truy cập
- *       500:
- *         description: Lỗi server
- */
-router.post("/update", auth, rankingController.updateRankings);
-
 module.exports = router;

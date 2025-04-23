@@ -44,13 +44,6 @@ const userPointSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  badgeLevel: {
-    type: String,
-    default: "Mới",
-  },
-  rank: {
-    type: Number,
-  },
   createdAt: {
     type: Date,
     default: Date.now,
