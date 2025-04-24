@@ -62,15 +62,16 @@ const userService = {
           Authorization: `Bearer ${token}`, // Sử dụng token từ middleware
         },
       });
-
-      if (response.data && response.data.success) {
+      // console.log("response", response);
+      if (response.data && response.status === 200) {
         // Cập nhật hoặc tạo mới cache
         userInfo = await UserInfo.findOneAndUpdate(
           { userId },
           {
-            fullName: response.data.data.fullname || "",
-            email: response.data.data.email,
-            avatar: response.data.data.avatar,
+            userName: response.data?.username || "",
+            fullName: response.data?.fullname || "",
+            email: response.data?.email || "",
+            avatar: response.data?.avatar || "",
             updatedAt: new Date(),
           },
           { upsert: true, new: true }

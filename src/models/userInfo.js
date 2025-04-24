@@ -37,6 +37,10 @@ const userInfoSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  userName: {
+    type: String,
+    default: "",
+  },
   fullName: {
     type: String,
     default: "",

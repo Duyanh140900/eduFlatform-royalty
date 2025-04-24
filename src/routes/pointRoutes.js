@@ -5,6 +5,7 @@ const {
   validateRedeemPoints,
 } = require("../middleware/validate");
 const { auth } = require("../middleware/auth");
+const keycloakAuth = require("../middleware/keycloakAuth");
 
 const router = express.Router();
 
@@ -165,7 +166,7 @@ router.post(
  *       500:
  *         description: Lỗi server
  */
-router.get("/balance/:userId", pointController.getBalance);
+router.get("/balance/:userId", auth, pointController.getBalance);
 
 /**
  * @swagger
@@ -236,6 +237,6 @@ router.get("/balance/:userId", pointController.getBalance);
  *       500:
  *         description: Lỗi server
  */
-router.get("/history/:userId", pointController.getHistory);
+router.get("/history/:userId", auth, pointController.getHistory);
 
 module.exports = router;

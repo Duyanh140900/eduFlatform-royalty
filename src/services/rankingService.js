@@ -81,9 +81,10 @@ const rankingService = {
         rankings.push({
           rank: index + 1,
           userId: point._id,
-          name: userInfo.success
-            ? userInfo.data.fullName
-            : `User ${point._id.substring(0, 5)}...`,
+          userName: userInfo.success
+            ? userInfo.data.userName
+            : `User ${point._id}`,
+          fullName: userInfo.success ? userInfo.data.fullName : "",
           totalPoints: point.totalPoints,
           badgeLevel: badgeLevel?.name || null,
           iconBadge: badgeLevel?.icon || null,

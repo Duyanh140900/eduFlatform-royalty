@@ -1,32 +1,34 @@
 const jwt = require("jsonwebtoken");
+const keycloakAuth = require("./keycloakAuth");
 
 const auth = (req, res, next) => {
   try {
-    // Lấy token từ header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        success: false,
-        message: "Không tìm thấy token xác thực",
-      });
-    }
+    keycloakAuth.middleware()(req, res, next);
+    // // Lấy token từ header
+    // const authHeader = req.headers.authorization;
+    // if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    //   return res.status(401).json({
+    //     success: false,
+    //     message: "Không tìm thấy token xác thực",
+    //   });
+    // }
 
-    const token = authHeader.split(" ")[1];
-    // Cấu hình JWT Secret từ dự án .NET
-    const JWT_SECRET = process.env.JWT_SECRET;
-    const JWT_ISSUER = process.env.JWT_ISSUER;
-    const JWT_AUDIENCE = process.env.JWT_AUDIENCE;
+    // const token = authHeader.split(" ")[1];
+    // // Cấu hình JWT Secret từ dự án .NET
+    // const JWT_SECRET = process.env.JWT_SECRET;
+    // const JWT_ISSUER = process.env.JWT_ISSUER;
+    // const JWT_AUDIENCE = process.env.JWT_AUDIENCE;
 
-    // Xác thực token trực tiếp sử dụng cùng JWT_SECRET với service login
-    const decoded = jwt.verify(token, JWT_SECRET, {
-      issuer: JWT_ISSUER,
-      audience: JWT_AUDIENCE,
-    });
+    // // Xác thực token trực tiếp sử dụng cùng JWT_SECRET với service login
+    // const decoded = jwt.verify(token, JWT_SECRET, {
+    //   issuer: JWT_ISSUER,
+    //   audience: JWT_AUDIENCE,
+    // });
 
-    // Gán thông tin user vào request
-    req.user = decoded;
+    // // Gán thông tin user vào request
+    // req.user = decoded;
 
-    next();
+    // next();
   } catch (error) {
     console.error("Lỗi xác thực token:", error);
     return res.status(401).json({
